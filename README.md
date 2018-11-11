@@ -9,7 +9,7 @@ Long story short: having "magic" methods called from Unity has an overhead and t
 -Derive your MonoBehaviour from OverridableMonoBehaviour.  
 -Add Interfaces to notify what your script is using (IUpdatable, ILateUpdatable, IFixedUpdatable).  
 -Use public override void UpdateMe and its variants to get Update ticks.  
--If you use Start, OnEnable and OnDisable methods then change them to Protected Override Void Start and call base.FunctionName() in them.  
+-If you use Start, OnEnable and OnDisable methods then change them to Protected Override Void FunctionName() and call base.FunctionName() in them.  
 # Some Notes
 -The manager recognizes what functions you want to use based on Interfaces. We're using them exclusively for that to avoid garbage generation/additional RAM usage compared to other methods and save performance by not using reflection.  
 -Garbage is generetad only upon Arrays overflow when trying to add more scripts than the array can hold.  
