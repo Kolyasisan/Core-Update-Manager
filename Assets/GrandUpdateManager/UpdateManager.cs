@@ -8,6 +8,8 @@ using UnityEngine;
 /// This system speeds up scripts by having their update ticks called from managed code rather than Unity's C++ code (thanks Unity).
 /// The more update ticks you have the faster it gets compared to vanilla Updates.
 /// Your scripts must derive from OverridableMonoBehaviour.
+/// Your scripts must also contain one of the interfaces (IUpdatable, IFixedUpdatable, ILateUpdatable). They are used to let the manager know what your script uses (the calls are still performed through class inheritance).
+/// Yeah, I know it's dumb to not have interfaces for calls, but this way we can reduce ram usage/garbage generation and also not use reflection.
 /// public override void UpdateMe, FixedUpdateMe, LateUpdateMe and BatchedUpdateMe will update your scripts.
 /// Awake, Start, OnEnable and OnDisable all need to be marked as protected override and have base.functionname in them in order to work.
 ///
@@ -85,17 +87,17 @@ public class UpdateManager : MonoBehaviour
 
     private void ScheduleItemAddition(OverridableMonoBehaviour behaviour)
     {
-        if (!CheckIfArrayContainsItem(regularArray, behaviour) && behaviour.GetType().GetMethod("UpdateMe").DeclaringType != typeof(OverridableMonoBehaviour))
+        if (!CheckIfArrayContainsItem(regularArray, behaviour) && behaviour is IUpdatable)
         {
             ExtendAndAddItemToArray(ref regularArray, behaviour, ref regularUpdateArrayCount);
         }
 
-        if (!CheckIfArrayContainsItem(fixedArray, behaviour) && behaviour.GetType().GetMethod("FixedUpdateMe").DeclaringType != typeof(OverridableMonoBehaviour))
+        if (!CheckIfArrayContainsItem(fixedArray, behaviour) && behaviour is IFixedUpdatable)
         {
             ExtendAndAddItemToArray(ref fixedArray, behaviour, ref fixedUpdateArrayCount);
         }
         
-        if (!CheckIfArrayContainsItem(lateArray, behaviour) && behaviour.GetType().GetMethod("LateUpdateMe").DeclaringType != typeof(OverridableMonoBehaviour))
+        if (!CheckIfArrayContainsItem(lateArray, behaviour) && behaviour is ILateUpdatable)
         {
             ExtendAndAddItemToArray(ref lateArray, behaviour, ref lateUpdateArrayCount);
         }
