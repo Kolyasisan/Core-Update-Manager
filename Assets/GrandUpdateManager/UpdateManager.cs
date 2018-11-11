@@ -96,13 +96,48 @@ public class UpdateManager : MonoBehaviour
         {
             ExtendAndAddItemToArray(ref fixedArray, behaviour, ref fixedUpdateArrayCount);
         }
-        
+
         if (!CheckIfArrayContainsItem(lateArray, behaviour) && behaviour is ILateUpdatable)
         {
             ExtendAndAddItemToArray(ref lateArray, behaviour, ref lateUpdateArrayCount);
         }
 
-        //ArrayExceptionSolver();
+
+        //Old method using reflections
+        /*
+        if (!CheckIfArrayContainsItem(regularArray, behaviour) && behaviour.GetType().GetMethod("UpdateMe").DeclaringType != typeof(OverridableMonoBehaviour))
+        {
+            ExtendAndAddItemToArray(ref regularArray, behaviour, ref regularUpdateArrayCount);
+        }
+
+        if (!CheckIfArrayContainsItem(fixedArray, behaviour) && behaviour.GetType().GetMethod("FixedUpdateMe").DeclaringType != typeof(OverridableMonoBehaviour))
+        {
+            ExtendAndAddItemToArray(ref fixedArray, behaviour, ref fixedUpdateArrayCount);
+        }
+        
+        if (!CheckIfArrayContainsItem(lateArray, behaviour) && behaviour.GetType().GetMethod("LateUpdateMe").DeclaringType != typeof(OverridableMonoBehaviour))
+        {
+            ExtendAndAddItemToArray(ref lateArray, behaviour, ref lateUpdateArrayCount);
+        }
+        */
+
+
+        //Some functions to help determine if your script is trying to subscribe without having Interfaces
+        /*
+        if (!CheckIfArrayContainsItem(regularArray, behaviour) && behaviour.GetType().GetMethod("UpdateMe").DeclaringType != typeof(OverridableMonoBehaviour) && (behaviour is IUpdatable) == false)
+        {
+            Debug.LogWarning(behaviour + "found exception");
+        }
+        if (!CheckIfArrayContainsItem(regularArray, behaviour) && behaviour.GetType().GetMethod("LateUpdateMe").DeclaringType != typeof(OverridableMonoBehaviour) && (behaviour is ILateUpdatable) == false)
+        {
+            Debug.LogWarning(behaviour + "found exception");
+        }
+        if (!CheckIfArrayContainsItem(regularArray, behaviour) && behaviour.GetType().GetMethod("FixedUpdateMe").DeclaringType != typeof(OverridableMonoBehaviour) && (behaviour is IFixedUpdatable) == false)
+        {
+            Debug.LogWarning(behaviour + "found exception");
+        }
+        */
+
     }
     
     private void ScheduleItemRemoval(OverridableMonoBehaviour behaviour)
@@ -121,8 +156,6 @@ public class UpdateManager : MonoBehaviour
         {
             ShrinkAndRemoveItemFromArray(ref lateArray, behaviour, ref lateUpdateArrayCount, ref lateUpdateArrayCount);
         }
-
-        //ArrayExceptionSolver();
     }
 
     private void ExtendAndAddItemToArray(ref OverridableMonoBehaviour[] original, OverridableMonoBehaviour itemToAdd, ref int amount)
@@ -167,7 +200,6 @@ public class UpdateManager : MonoBehaviour
 
     private void ShrinkAndRemoveItemFromArray(ref OverridableMonoBehaviour[] original, OverridableMonoBehaviour itemToRemove, ref int amount, ref int arraySize)
     {
-        //int size = GetTrueArrayLength(ref original);
         int size = arraySize;
         if (size == 0) size = 1;
 
@@ -186,8 +218,6 @@ public class UpdateManager : MonoBehaviour
 
         amount--;
         arraysWereChanged = true;
-        
-        //WipeArrayFromToNull(ref original, size);
     }
 
     //Self-explanatory
@@ -225,10 +255,12 @@ public class UpdateManager : MonoBehaviour
                     }
             }
         }
+        int copyAmount = workerArray.Length;
+        if (workerArray.Length > original.Length)
+            copyAmount = original.Length;
 
         WipeArray(ref original, original.Length);
-        CopyArray(ref workerArray, ref original, original.Length);
-        //WipeArray(ref workerArray, workerArray.Length);
+        CopyArray(ref workerArray, ref original, copyAmount);
     }
 
     //Copies the array's elements starting from the frist one and ending on the desired location.
