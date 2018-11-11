@@ -10,13 +10,13 @@ Long story short: having "magic" methods called from Unity has an overhead and t
 -Add Interfaces to notify what your script is using (IUpdatable, ILateUpdatable, IFixedUpdatable).  
 -Use public override void UpdateMe and its variants to get Update ticks.  
 -If you use Start, OnEnable and OnDisable methods then change them to Protected Override Void Start and call base.FunctionName() in them.  
-
-The manager recognizes what functions you want to use based on Interfaces. We're using them exclusively for that to avoid garbage generation/additional RAM usage compared to other methods and save performance by not using reflection.  
-Garbage is generetad only upon Arrays overflow when trying to add more scripts than the array can hold.  
-Arrays are used and managed manually instead of lists for maximum performance.  
-The scripts subscribe and unsubscribe on Start and OnDestroy respectively to save on performance. Whether or not they receive update ticks is determined by internal_Enabled which you can also control manually by disabling its automatic control (yes, you can set it up to get ticks even if it's disabled).  
-internal_ExecutionOrder controls the order of when your scripts will be updated. All the scripts are sorted really fast before every update after the changes were made by subscribing. That means dynamic and effortless execution order.
-See detailed instructions in the UpdateManager script.  
+# Some Notes
+-The manager recognizes what functions you want to use based on Interfaces. We're using them exclusively for that to avoid garbage generation/additional RAM usage compared to other methods and save performance by not using reflection.  
+-Garbage is generetad only upon Arrays overflow when trying to add more scripts than the array can hold.  
+-Arrays are used and managed manually instead of lists for maximum performance.  
+-The scripts subscribe and unsubscribe on Start and OnDestroy respectively to save on performance. Whether or not they receive update ticks is determined by internal_Enabled which you can also control manually by disabling its automatic control (yes, you can set it up to get ticks even if it's disabled).  
+-internal_ExecutionOrder controls the order of when your scripts will be updated. All the scripts are sorted really fast before every update after the changes were made by subscribing. That means dynamic and effortless execution order.
+-See detailed instructions in the UpdateManager script.  
 
 Warning: may potentially enforce you to facepalm yourself upon seeing the code!
 
