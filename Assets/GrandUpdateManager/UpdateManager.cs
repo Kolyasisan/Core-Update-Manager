@@ -4,13 +4,14 @@ using UnityEngine;
 /// <summary>
 /// Made by Nikolai "Kolyasisan" Ponomarev originally for Grand Dad Mania Revived (memes yay).
 /// Base concept by Valentin Simonov, PlayDead and Feiko Joosten.
-/// 
+/// Released under the MIT license.
+///
 /// This system speeds up scripts by having their update ticks called from managed code rather than Unity's C++ code (thanks Unity).
 /// The more update ticks you have the faster it gets compared to vanilla Updates.
 /// Your scripts must derive from OverridableMonoBehaviour.
 /// Your scripts must also contain one of the interfaces (IUpdatable, IFixedUpdatable, ILateUpdatable). They are used to let the manager know what your script uses (the calls are still performed through class inheritance).
 /// Yeah, I know it's dumb to not have interfaces for calls, but this way we can reduce ram usage/garbage generation and also not use reflection.
-/// public override void UpdateMe, FixedUpdateMe, LateUpdateMe and BatchedUpdateMe will update your scripts.
+/// public override void UpdateMe, FixedUpdateMe and LateUpdateMe will update your scripts.
 /// Awake, Start, OnEnable and OnDisable all need to be marked as protected override and have base.functionname in them in order to work.
 ///
 /// Features include:
