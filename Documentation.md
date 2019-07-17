@@ -57,7 +57,7 @@ So, to recap, in order to add a new loop type, you will need:
 -Plug into the CoreUpdateManager and call necessary methods  
 
 # Performance considerations
-CoreUpdateManager is fairly fast: it generates no garbage during normal use, works with arraysm and sorts them only when necessary. However, there are 2 things that you need to be aware of.
+CoreUpdateManager is fairly fast: it generates no garbage during normal use, works with arraysm and sorts them only when necessary. However, there are 2 things that you need to be aware of. It is generally faster than using managed code in any situation.
 
 First is that the size of the array is limited. By default arrays are initialized with a value of 512, so when the queue overflows a new array is generated with double the size, which will lead to the first array to be garbage collected, which produces a spike.
 
