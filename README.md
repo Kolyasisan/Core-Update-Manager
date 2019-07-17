@@ -5,7 +5,7 @@ First used for Grand Dad Mania Revived (https://pechka-productions.itch.io/grand
 
 Long story short: having magic methods called from Unity has an overhead and thus, if you wish to gain performance or get more freedom/features at the expense of being a little more careful and using a little bit more memory, you can write your own Update Manager which will be the only thing that receives the magic Update method and distributes it across all the other objects. In Grand Dad Mania Revived we managed to save 0.5ms on average on Xiaomi Mi5S Plus.
 
-While Unity is doubling-down on their Entity Component System paradigm, the usual MonoBehaviour approach is not going away, so this project will most definitely be useful for you. The Update Manager will be faster than Unity's marshalled calls in pretty much any project.
+While Unity is doubling-down on their Entity Component System paradigm, the usual MonoBehaviour approach is not going away, so this project will most definitely be useful to you. Managed updates will be faster than Unity's marshalled calls in pretty much any project.
 
 # How to use
   -Use CoreMonoBeh instead of MonoBehaviour  
