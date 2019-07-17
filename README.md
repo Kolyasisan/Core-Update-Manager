@@ -5,6 +5,11 @@ First used for Grand Dad Mania Revived (https://pechka-productions.itch.io/grand
 
 Long story short: having "magic" methods called from Unity has an overhead and thus, if you wish to gain performance or get more freedom/features at the expense of being a little more careful and using a little bit more memory, you can write your own Update Manager which will be the only thing that receives the magic Update method and distributes it across all the other objects. In Grand Dad Mania Revived we managed to save 0.5ms on average on Xiaomi Mi5S Plus.
 
-Read ```Documentation.md``` on how to use it.
+# How to use
+  -Use CoreMonoBeh instead of MonoBehaviour  
+  -Override the CoreInitSetup() method and generate a LoopUpdateSettings struct inside it with settings for your loops  
+  -Use override functions that start with Core instead of Unity's marshalled calls (for example CoreAwake instead of Awake)  
 
-Please read the ```License```.
+Read ```DOCUMENTATION.md``` for details.
+
+Please read the ```LICENSE```.
