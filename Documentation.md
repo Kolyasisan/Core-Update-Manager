@@ -25,11 +25,11 @@ Update Manager consist of several loops, to which your CoreMonoBehs can subscrib
 
 As an example, there are only 2 loops available here, CoreUpdate and CoreGameplayUpdate. Each CoreMonoBeh has a configuration struct defined for them, UM_SETTINGS_UPDATE and UM_SETTINGS_GAMEPLAYUPDATE respectively.
 
-There are several options in the struct:
--isInited: generates automatically when you manually initialize the struct, e.g. when you want this CoreMonoBeh to be considered by the update manager regarding a particular loop.
--eligibleForUpdate: if it's set to false, then this CoreMonoBeh will not receive update calls for a loop (provided that it subscribed in the first place).
--updateOrder: defines the order where your script will be placed. The default value is 128.
--AutoManageDisableAndEnableEvents: if it's checked, the the CoreMonoBeh will automatically start and stop receiving update calls when it's enabled or disabled, just like the usual MonoBehaviour. You can set it to false and manage this value yourself, which has quite a bit of use cases.
+There are several options in the struct:  
+-isInited: generates automatically when you manually initialize the struct, e.g. when you want this CoreMonoBeh to be considered by the update manager regarding a particular loop.  
+-eligibleForUpdate: if it's set to false, then this CoreMonoBeh will not receive update calls for a loop (provided that it subscribed in the first place).  
+-updateOrder: defines the order where your script will be placed. The default value is 128 and the range is 0-255.  
+-AutoManageDisableAndEnableEvents: if it's checked, the the CoreMonoBeh will automatically start and stop receiving update calls when it's enabled or disabled, just like the usual MonoBehaviour. You can set it to false and manage this value yourself, which has quite a bit of use cases.  
 
 So, by doing something like this:
 ```C#
