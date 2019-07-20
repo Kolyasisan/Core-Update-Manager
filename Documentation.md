@@ -42,7 +42,7 @@ public class MyNiceBehaviour : CoreMonoBeh
     
     public override void CoreUpdate()
     {
-        //Yay, code!
+        //Now your code placed in this method will execute. Yay!
     }
 }
 ```
