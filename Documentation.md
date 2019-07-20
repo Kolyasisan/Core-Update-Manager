@@ -63,3 +63,6 @@ CoreUpdateManager is fairly fast: it generates no garbage during normal use, wor
 First is that the size of the array is limited. By default arrays are initialized with a value of 512, so when the queue overflows a new array is generated with double the size, which will lead to the first array to be garbage collected, which produces a spike.
 
 Second is that the update manager uses try/catch blocks in order to catch exceptions and function like marshalled methods. While the try block exhibits very little performance overhead, you can disable it by commenting out ```#define UPDATEMANAGER_USETRYCATCH``` in the queues. This, however, will lead to a lot of problems if your code will encounter unmanaged exceptions, which most often leads to a softlock of the game (not technically one, but you get the point).
+
+# Some crucial notes
+The project has a script called ```Il2CppSetOptionAttribute``` that contains an attribute for the IL2CPP compiler. The UpdateManager uses those attributes to gain quite a bit of performance by disabling some checks. If you already have this script in your project - you can safely delete the one that is shipped with the Update Manager. Alternatively, if you do not trust the update manager (which is nice of you, really), then you can remove the attributes from all of the scripts in this project.
