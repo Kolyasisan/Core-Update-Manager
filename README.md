@@ -12,6 +12,8 @@ While Unity is doubling-down on their Entity Component System paradigm, the usua
   -Override the CoreInitSetup() method and generate a LoopUpdateSettings struct inside it with settings for your loops  
   -Use override functions that start with Core instead of Unity's marshalled calls (for example CoreAwake instead of Awake)  
 
+
+
 Read ```DOCUMENTATION.md``` for details.
 
 This project is distributed under the ```Beerware License```  
