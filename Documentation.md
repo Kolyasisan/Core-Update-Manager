@@ -33,8 +33,8 @@ There are several options in the struct:
 
 So, by doing something like this:
 ```C#
-public class MyNiceBehaviour : CoreMonoBeh {
-
+public class MyNiceBehaviour : CoreMonoBeh
+{
     public override void CoreInitSetup()
     {
         UM_SETTINGS_UPDATE = new LoopUpdateSettings(default); //Replace defaults with your own values for something special
