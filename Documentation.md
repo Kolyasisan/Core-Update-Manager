@@ -49,16 +49,17 @@ public class MyNiceBehaviour : CoreMonoBeh {
 We make ```MyNiceBehaviour``` receive custom update calls. Cool huh?
 
 # How to extend?
-CoreUpdateManager creates and manages queues. The base class is UpdateQueue, which stores and manages CoreMonoBehs. It's not enough by itself, because each queue needs to know what settings to pull and use. This is handled by the QueueOverrides, which serve to just retrieve and write the ```LoopUpdateSettings``` structs. See the source to understand it, it's not complex at all and is easily extendable.
+CoreUpdateManager creates and manages queues. The base class is UpdateQueue, which stores and manages CoreMonoBehs. It's not enough by itself, because each queue needs to know what settings to pull and use. This is handled by the QueueOverrides, which serve to just retrieve and write the ```LoopUpdateSettings``` structs. See the source to understand it, it's not complex at all and is easily extendable. Also, you'll need a function called Perform(), which will call the update methods on the behaviours in the queue. Perform itself will need to be called from the Update Manager itself.
 
 So, to recap, in order to add a new loop type, you will need:  
 -Create the dedicated UM_SETTINGS value in CoreMonoBeh to store the config (unless you wanna use the other loop's config)  
 -Create an override for BehaviourQueue that gets and sets the configs for behaviours  
+-Plug in the Perform method for your queue as a hiding method, e.g. ```new public void Perform()```. This is done to avoid the cost of an override method, though it is pathetically small.  
 -Plug into the CoreUpdateManager and call necessary methods  
 
 # Performance considerations
-CoreUpdateManager is fairly fast: it generates no garbage during normal use, works with arrays and sorts them only when necessary. However, there are 2 things that you need to be aware of. It is generally faster than using managed code in any situation.
+CoreUpdateManager is fairly fast: it generates no garbage during normal use, works with arrays and sorts them only when necessary. It is generally faster than using managed code in any situation. However, there are 2 things that you need to be aware of.
 
 First is that the size of the array is limited. By default arrays are initialized with a value of 512, so when the queue overflows a new array is generated with double the size, which will lead to the first array to be garbage collected, which produces a spike.
 
-Second is that the update manager uses try/catch blocks in order to catch exceptions and function like marshalled methods. While the try block exhibits very little performance overhead, you can disable it by commenting out ```#define UPDATEMANAGER_USETRYCATCH``` on top of the script. This, however, will lead to a lot of problems if your code will encounter unmanaged exceptions, which most often leads to a softlock of the game (not technically one, but you get the point).
+Second is that the update manager uses try/catch blocks in order to catch exceptions and function like marshalled methods. While the try block exhibits very little performance overhead, you can disable it by commenting out ```#define UPDATEMANAGER_USETRYCATCH``` in the queues. This, however, will lead to a lot of problems if your code will encounter unmanaged exceptions, which most often leads to a softlock of the game (not technically one, but you get the point).
