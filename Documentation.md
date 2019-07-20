@@ -16,7 +16,7 @@ public class MyNiceBehaviour : CoreMonoBeh
 {
     public override void OnAwake()
     {
-        //This is my new Awake.
+        //This is the new Awake method.
     }
 }
 ```
@@ -42,7 +42,7 @@ public class MyNiceBehaviour : CoreMonoBeh
     
     public override void CoreUpdate()
     {
-        //Now your code placed in this method will execute. Yay!
+        //Your code placed in this method will execute now. Yay!
     }
 }
 ```
