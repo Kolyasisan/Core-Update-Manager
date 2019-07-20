@@ -10,7 +10,9 @@
 //You can comment-out this line to gain minor performance, but any exception will halt the loop entirely, which can lead to a softlock.
 #define UPDATEMANAGER_USETRYCATCH
 
+using System;
 using Unity.IL2CPP.CompilerServices;
+using UnityEngine;
 
 [System.Serializable]
 [Il2CppSetOption(Option.NullChecks, false)]
@@ -42,9 +44,9 @@ public class GameplayUpdateQueue : BehaviourQueueBase
                     {
                         queue[i].CoreGameplayUpdate();
                     }
-                    catch (System.FormatException e)
+                    catch (Exception e)
                     {
-
+                        Debug.LogException(e);
                     }
 #else
                         queue[i].CoreGameplayUpdate();
