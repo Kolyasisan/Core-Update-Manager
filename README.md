@@ -14,5 +14,5 @@ While Unity is doubling-down on their Entity Component System paradigm, the usua
 
 Read ```DOCUMENTATION.md``` for details.
 
-This project is distributed under the ```Beerware License```
+This project is distributed under the ```Beerware License```  
 ![Beer](https://habrastorage.org/getpro/geektimes/post_images/78f/720/c75/78f720c75de7b8828353bc0cf8a254c4.png)
