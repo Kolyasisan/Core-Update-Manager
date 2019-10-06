@@ -12,70 +12,27 @@ using UnityEngine;
 [Il2CppSetOption(Option.NullChecks, false)]
 [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
 [Il2CppSetOption(Option.DivideByZeroChecks, false)]
-public class CoreMonoBeh : MonoBehaviour
+public partial class CoreMonoBeh : MonoBehaviour
 {
+    //Add your own settings defines here or use a partial class.
     #region loopsettings
+
     [System.NonSerialized] public LoopUpdateSettings UM_SETTINGS_UPDATE;
     [System.NonSerialized] public LoopUpdateSettings UM_SETTINGS_GAMEPLAYUPDATE;
     [System.NonSerialized] public LoopUpdateSettings UM_SETTINGS_FIXEDUPDATE;
+
     #endregion
 
-    #region cachedcomponents
-    public Transform _transform { get; private set; }
-    #endregion
+    //Add your own function defines here or use a partial class.
+    #region loopfunctions
 
     public virtual void CoreUpdate() { }
     public virtual void CoreGameplayUpdate() { }
     public virtual void CoreFixedUpdate() { }
 
-    protected void Awake()
-    {
-        _transform = (Transform)GetComponent(typeof(Transform));
+    #endregion
 
-        CoreInitSetup();
-        CoreUpdateManager.ScheduleBehaviourRegister(this);
-
-        CoreAwake();
-    }
-
-    protected void Start()
-    {
-        CoreStart();
-    }
-
-    protected void OnDestroy()
-    {
-        CoreOnDestroy();
-        CoreUpdateManager.ScheduleBehaviourRemoval(this);
-    }
-
-    protected void OnEnable()
-    {      
-        if (UM_SETTINGS_UPDATE.isInited && UM_SETTINGS_UPDATE.AutoManageEnableDisableEvents)
-            UM_SETTINGS_UPDATE.eligibleForUpdate = true;
-
-        if (UM_SETTINGS_GAMEPLAYUPDATE.isInited && UM_SETTINGS_GAMEPLAYUPDATE.AutoManageEnableDisableEvents)
-            UM_SETTINGS_GAMEPLAYUPDATE.eligibleForUpdate = true;
-
-        if (UM_SETTINGS_FIXEDUPDATE.isInited && UM_SETTINGS_FIXEDUPDATE.AutoManageEnableDisableEvents)
-            UM_SETTINGS_FIXEDUPDATE.eligibleForUpdate = true;
-
-        CoreOnEnable();
-    }
-
-    protected void OnDisable()
-    {      
-        if (UM_SETTINGS_UPDATE.isInited && UM_SETTINGS_UPDATE.AutoManageEnableDisableEvents)
-            UM_SETTINGS_UPDATE.eligibleForUpdate = false;
-
-        if (UM_SETTINGS_GAMEPLAYUPDATE.isInited && UM_SETTINGS_GAMEPLAYUPDATE.AutoManageEnableDisableEvents)
-            UM_SETTINGS_GAMEPLAYUPDATE.eligibleForUpdate = false;
-
-        if (UM_SETTINGS_FIXEDUPDATE.isInited && UM_SETTINGS_FIXEDUPDATE.AutoManageEnableDisableEvents)
-            UM_SETTINGS_FIXEDUPDATE.eligibleForUpdate = false;
-
-        CoreOnDisable();
-    }
+    #region behaviourfunctions
 
     /// <summary>
     /// Works the same as Awake(). Use this instead of the Awake method.
@@ -106,4 +63,55 @@ public class CoreMonoBeh : MonoBehaviour
     /// Works the same as OnDisable().
     /// </summary>
     public virtual void CoreOnDisable() { }
+
+    #endregion
+
+    #region cachedcomponents
+
+    public Transform _transform { get; private set; }
+
+    #endregion
+
+    #region internalfunctions
+
+    protected void Awake()
+    {
+        _transform = (Transform)GetComponent(typeof(Transform));
+
+        CoreInitSetup();
+        CoreUpdateManager.ScheduleBehaviourRegister(this);
+
+        CoreAwake();
+    }
+
+    protected void Start()
+    {
+        CoreStart();
+    }
+
+    protected void OnDestroy()
+    {
+        CoreOnDestroy();
+        CoreUpdateManager.ScheduleBehaviourRemoval(this);
+    }
+
+    protected void OnEnable()
+    {
+        UM_SETTINGS_UPDATE.PerformEnableDisableRoutine(true);
+        UM_SETTINGS_GAMEPLAYUPDATE.PerformEnableDisableRoutine(true);
+        UM_SETTINGS_FIXEDUPDATE.PerformEnableDisableRoutine(true);
+
+        CoreOnEnable();
+    }
+
+    protected void OnDisable()
+    {
+        UM_SETTINGS_UPDATE.PerformEnableDisableRoutine(false);
+        UM_SETTINGS_GAMEPLAYUPDATE.PerformEnableDisableRoutine(false);
+        UM_SETTINGS_FIXEDUPDATE.PerformEnableDisableRoutine(false);
+
+        CoreOnDisable();
+    }
+
+    #endregion
 }

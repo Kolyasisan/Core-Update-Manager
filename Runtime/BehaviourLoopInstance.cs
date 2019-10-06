@@ -6,8 +6,13 @@
 //* stuff is worth it, you can buy me a beer in return.
 //* ---------------------------------------------------------------
 
+//The update manager executes calls inside Try-Catch blocks in order to deal with exceptions.
+//You can comment-out this line to gain minor performance, but any exception will halt the loop entirely, which can lead to a softlock.
+#define UPDATEMANAGER_USETRYCATCH
+
 using Unity.IL2CPP.CompilerServices;
 using UnityEngine;
+using System;
 
 /// <summary>
 /// A general queue for storing the behaviours.
@@ -16,9 +21,11 @@ using UnityEngine;
 [Il2CppSetOption(Option.NullChecks, false)]
 [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
 [Il2CppSetOption(Option.DivideByZeroChecks, false)]
-public class BehaviourQueueBase
+public class BehaviourLoopInstance : MonoBehaviour
 {
     #region variables
+
+    public static bool isInited = false;
 
     public CoreMonoBeh[] queue
     {
@@ -225,7 +232,7 @@ public class BehaviourQueueBase
             }
 
             queue[j + 1] = temp;
-        }    
+        }
     }
 
     public void RemoveLowerBehaviour()
@@ -296,7 +303,10 @@ public class BehaviourQueueBase
 
     public virtual void WriteLoopSettings(CoreMonoBeh beh, LoopUpdateSettings set) { throw new System.Exception("Usage of base undefined setter"); }
 
-    public void Perform() { throw new System.Exception("Usage of base undefined method"); }
+    /// <summary>
+    /// Performs the entire queue poll and processess additions and removals for queues.
+    /// </summary>
+    public virtual void Perform() { { throw new System.Exception("Usage of base undefined method"); } }
 
     #endregion
 }

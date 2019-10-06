@@ -18,40 +18,54 @@ using UnityEngine;
 [Il2CppSetOption(Option.NullChecks, false)]
 [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
 [Il2CppSetOption(Option.DivideByZeroChecks, false)]
-public class FixedUpdateQueue : BehaviourQueueBase
+public class UpdateLoop : BehaviourLoopInstance
 {
+    public static UpdateLoop instance { get; private set; }
+
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
+    static void Init()
+    {
+        instance = (UpdateLoop)CoreUpdateManager.RegisterBehaviourQueue<UpdateLoop>("UpdateQueue");
+    }
+
+    void OnDestroy()
+    {
+        instance = null;
+    }
+
     public override LoopUpdateSettings GetLoopSettings(CoreMonoBeh beh)
     {
-        return beh.UM_SETTINGS_FIXEDUPDATE;
+        return beh.UM_SETTINGS_UPDATE;
     }
 
     public override void WriteLoopSettings(CoreMonoBeh beh, LoopUpdateSettings set)
     {
-        beh.UM_SETTINGS_FIXEDUPDATE = set;
+        beh.UM_SETTINGS_UPDATE = set;
     }
 
-    new public void Perform()
+    public override void Perform()
     {
+        CoreUpdateManager.PerformUpdateManagerRoutine();
+
         if (HasEntries)
         {
             int cnt = UpperBound;
             for (int i = LowerBound + 1; i < cnt; i++)
             {
-                if (queue[i].UM_SETTINGS_FIXEDUPDATE.eligibleForUpdate)
+                if (queue[i].UM_SETTINGS_UPDATE.eligibleForUpdate)
                 {
 #if UPDATEMANAGER_USETRYCATCH
                     try
                     {
-                        queue[i].CoreFixedUpdate();
+                        queue[i].CoreUpdate();
                     }
                     catch (Exception e)
                     {
                         Debug.LogException(e);
                     }
 #else
-                    queue[i].CoreFixedUpdate();
+                    queue[i].CoreUpdate();
 #endif
-
                 }
             }
         }

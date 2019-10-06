@@ -18,40 +18,55 @@ using UnityEngine;
 [Il2CppSetOption(Option.NullChecks, false)]
 [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
 [Il2CppSetOption(Option.DivideByZeroChecks, false)]
-public class UpdateQueue : BehaviourQueueBase
+public class GameplayUpdateLoop : BehaviourLoopInstance
 {
+    public static GameplayUpdateLoop instance { get; private set; }
+    public bool isPaused = false;
+
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
+    static void Init()
+    {
+        instance = (GameplayUpdateLoop)CoreUpdateManager.RegisterBehaviourQueue<GameplayUpdateLoop>("GameplayUpdateQueue");
+    }
+
+    void OnDestroy()
+    {
+        instance = null;
+    }
+
     public override LoopUpdateSettings GetLoopSettings(CoreMonoBeh beh)
     {
-        return beh.UM_SETTINGS_UPDATE;
+        return beh.UM_SETTINGS_GAMEPLAYUPDATE;
     }
 
     public override void WriteLoopSettings(CoreMonoBeh beh, LoopUpdateSettings set)
     {
-        beh.UM_SETTINGS_UPDATE = set;
+        beh.UM_SETTINGS_GAMEPLAYUPDATE = set;
     }
 
-    new public void Perform()
+    public override void Perform()
     {
-        if (HasEntries)
+        CoreUpdateManager.PerformUpdateManagerRoutine();
+
+        if (HasEntries && !isPaused)
         {
             int cnt = UpperBound;
             for (int i = LowerBound + 1; i < cnt; i++)
             {
-                if (queue[i].UM_SETTINGS_UPDATE.eligibleForUpdate)
+                if (queue[i].UM_SETTINGS_GAMEPLAYUPDATE.eligibleForUpdate)
                 {
 #if UPDATEMANAGER_USETRYCATCH
                     try
                     {
-                        queue[i].CoreUpdate();
+                        queue[i].CoreGameplayUpdate();
                     }
                     catch (Exception e)
                     {
                         Debug.LogException(e);
                     }
 #else
-                    queue[i].CoreUpdate();
+                    queue[i].CoreGameplayUpdate();
 #endif
-
                 }
             }
         }
