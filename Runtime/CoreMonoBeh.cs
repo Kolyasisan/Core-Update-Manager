@@ -12,19 +12,19 @@ using UnityEngine;
 [Il2CppSetOption(Option.NullChecks, false)]
 [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
 [Il2CppSetOption(Option.DivideByZeroChecks, false)]
-public partial class CoreMonoBeh : MonoBehaviour
+public abstract partial class CoreMonoBeh : MonoBehaviour
 {
     //Add your own settings defines here or use a partial class.
-    #region loopsettings
+    #region loop settings
 
-    [System.NonSerialized] public LoopUpdateSettings UM_SETTINGS_UPDATE;
-    [System.NonSerialized] public LoopUpdateSettings UM_SETTINGS_GAMEPLAYUPDATE;
-    [System.NonSerialized] public LoopUpdateSettings UM_SETTINGS_FIXEDUPDATE;
+    public LoopUpdateSettings UM_SETTINGS_UPDATE { get; set; }
+    public LoopUpdateSettings UM_SETTINGS_GAMEPLAYUPDATE { get; set; }
+    public LoopUpdateSettings UM_SETTINGS_FIXEDUPDATE { get; set; }
 
     #endregion
 
     //Add your own function defines here or use a partial class.
-    #region loopfunctions
+    #region loop functions
 
     public virtual void CoreUpdate() { }
     public virtual void CoreGameplayUpdate() { }
@@ -32,7 +32,50 @@ public partial class CoreMonoBeh : MonoBehaviour
 
     #endregion
 
-    #region behaviourfunctions
+    //Insert routine functions for your custom settings defines here.
+    #region OnEnable OnDisable callbacks
+
+    protected void OnEnable()
+    {
+        UM_SETTINGS_UPDATE.PerformEnableDisableRoutine(true);
+        UM_SETTINGS_GAMEPLAYUPDATE.PerformEnableDisableRoutine(true);
+        UM_SETTINGS_FIXEDUPDATE.PerformEnableDisableRoutine(true);
+
+        CoreOnEnable();
+    }
+
+    protected void OnDisable()
+    {
+        UM_SETTINGS_UPDATE.PerformEnableDisableRoutine(false);
+        UM_SETTINGS_GAMEPLAYUPDATE.PerformEnableDisableRoutine(false);
+        UM_SETTINGS_FIXEDUPDATE.PerformEnableDisableRoutine(false);
+
+        CoreOnDisable();
+    }
+
+    #endregion
+
+
+
+
+
+    //Internal stuff beyond this point.
+    #region misc variables
+
+    /// <summary>
+    /// Returns true if this CoreMonoBeh is about to be destroyed.
+    /// </summary>
+    public bool isMarkedForDeletion { get; private set; }
+
+    #endregion
+
+    #region cached components
+
+    public Transform _transform { get; private set; }
+
+    #endregion
+
+    #region behaviour functions
 
     /// <summary>
     /// Works the same as Awake(). Use this instead of the Awake method.
@@ -66,20 +109,22 @@ public partial class CoreMonoBeh : MonoBehaviour
 
     #endregion
 
-    #region cachedcomponents
-
-    public Transform _transform { get; private set; }
-
-    #endregion
-
-    #region internalfunctions
+    #region internal functions
 
     protected void Awake()
     {
         _transform = (Transform)GetComponent(typeof(Transform));
 
+#if UNITY_EDITOR
+        if (Application.isPlaying)
+        {
+            CoreInitSetup();
+            CoreUpdateManager.ScheduleBehaviourRegister(this);
+        }
+#else
         CoreInitSetup();
         CoreUpdateManager.ScheduleBehaviourRegister(this);
+#endif
 
         CoreAwake();
     }
@@ -91,27 +136,26 @@ public partial class CoreMonoBeh : MonoBehaviour
 
     protected void OnDestroy()
     {
-        CoreOnDestroy();
-        CoreUpdateManager.ScheduleBehaviourRemoval(this);
-    }
+#if UNITY_EDITOR
+        if (Application.isPlaying)
+        {
+            isMarkedForDeletion = true;
+            CoreOnDestroy();
+            CoreUpdateManager.ScheduleBehaviourRemoval(this);
+        }
+        else
+        {
+            isMarkedForDeletion = true;
+            CoreOnDestroy();
+        }
+#else
+            isMarkedForDeletion = true;
+            CoreOnDestroy();
+            CoreUpdateManager.ScheduleBehaviourRemoval(this);
+#endif
 
-    protected void OnEnable()
-    {
-        UM_SETTINGS_UPDATE.PerformEnableDisableRoutine(true);
-        UM_SETTINGS_GAMEPLAYUPDATE.PerformEnableDisableRoutine(true);
-        UM_SETTINGS_FIXEDUPDATE.PerformEnableDisableRoutine(true);
-
-        CoreOnEnable();
-    }
-
-    protected void OnDisable()
-    {
-        UM_SETTINGS_UPDATE.PerformEnableDisableRoutine(false);
-        UM_SETTINGS_GAMEPLAYUPDATE.PerformEnableDisableRoutine(false);
-        UM_SETTINGS_FIXEDUPDATE.PerformEnableDisableRoutine(false);
-
-        CoreOnDisable();
     }
 
     #endregion
+
 }

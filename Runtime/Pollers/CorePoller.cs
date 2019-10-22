@@ -27,6 +27,11 @@ public class CorePoller : MonoBehaviour
         GameplayUpdateLoop.instance.Perform();
     }
 
+    private void LateUpdate()
+    {
+        CoreUpdateManager.PerformUpdateManagerRoutine();   
+    }
+
     private void FixedUpdate()
     {
         FixedUpdateLoop.instance.Perform();

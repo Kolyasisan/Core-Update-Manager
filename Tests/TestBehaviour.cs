@@ -6,8 +6,6 @@
 //* stuff is worth it, you can buy me a beer in return.
 //* ---------------------------------------------------------------
 
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 //First, you inherit from CoreMonoBeh

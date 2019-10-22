@@ -10,28 +10,29 @@
 //You can comment-out this line to gain minor performance, but any exception will halt the loop entirely, which can lead to a softlock.
 #define UPDATEMANAGER_USETRYCATCH
 
+using System;
+using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using Unity.IL2CPP.CompilerServices;
 using UnityEngine;
-using System;
+using UnityEngine.Profiling;
 
 /// <summary>
 /// A general queue for storing the behaviours.
 /// </summary>
-[System.Serializable] //System.Serializable is put here for debugging purpouses.
+[System.Serializable] //System.Serializable is put here for debugging purpouses (see CoreUpdateManager script).
 [Il2CppSetOption(Option.NullChecks, false)]
 [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
 [Il2CppSetOption(Option.DivideByZeroChecks, false)]
-public class BehaviourLoopInstance : MonoBehaviour
+public abstract class BehaviourLoopInstance : MonoBehaviour
 {
     #region variables
-
-    public static bool isInited = false;
 
     public CoreMonoBeh[] queue
     {
         get { return m_queue; }
     }
-    private CoreMonoBeh[] m_queue = new CoreMonoBeh[512];
+    private CoreMonoBeh[] m_queue = new CoreMonoBeh[CoreUpdateManager.arrayInitLength];
 
     /// <summary>
     /// Represents the highest unoccupied slot.
@@ -78,14 +79,13 @@ public class BehaviourLoopInstance : MonoBehaviour
     }
     private bool m_HasEntries = false;
 
-    private bool NewEntriesPresent = false;
-
     private bool NeedsSorting = false;
 
     #endregion
 
-    #region internalfunctions
+    #region internal functions
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void AddBehaviour(CoreMonoBeh beh)
     {
         //Safety check for overflow
@@ -103,8 +103,6 @@ public class BehaviourLoopInstance : MonoBehaviour
             m_UpperBound++;
         }
 
-        NewEntriesPresent = true;
-
         if (!HasEntries)
         {
             m_LowerUpdateQueueBound = m_UpperUpdateQueueBound;
@@ -112,6 +110,7 @@ public class BehaviourLoopInstance : MonoBehaviour
         }
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void AddBehaviourOnTop(CoreMonoBeh beh)
     {
         //Safety check for overflow
@@ -119,8 +118,6 @@ public class BehaviourLoopInstance : MonoBehaviour
 
         queue[m_UpperBound] = beh;
         m_UpperBound++;
-        NewEntriesPresent = true;
-
 
         if (!HasEntries)
         {
@@ -129,12 +126,23 @@ public class BehaviourLoopInstance : MonoBehaviour
         }
     }
 
-    public void AddBehaviourAndSort(CoreMonoBeh beh, LoopUpdateSettings settings)
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public void AddBehaviourAndSort(CoreMonoBeh beh)
     {
         //Safety check for overflow
         CheckForOverflowAndExpand();
 
-        if (settings.UpdateOrder >= UpperUpdateQueueBound)
+        LoopUpdateSettings settings = GetLoopSettings(beh);
+
+        //Just throw it somewhere if the queue is already marked for sorting.
+        //A nice early-out for batched additions.
+        if (NeedsSorting)
+        {
+            queue[m_UpperBound] = beh;
+            m_UpperBound++;
+            return;
+        }
+        else if (settings.UpdateOrder >= UpperUpdateQueueBound)
         {
             queue[m_UpperBound] = beh;
             m_UpperBound++;
@@ -146,7 +154,7 @@ public class BehaviourLoopInstance : MonoBehaviour
             m_LowerBound--;
             m_LowerUpdateQueueBound = settings.UpdateOrder;
         }
-        //It's somewhere inbetween. Sigh, sorting...
+        //It's somewhere inbetween or where we can't place legally. Mark it for sorting.
         else
         {
             queue[m_UpperBound] = beh;
@@ -159,27 +167,27 @@ public class BehaviourLoopInstance : MonoBehaviour
             m_LowerUpdateQueueBound = m_UpperUpdateQueueBound;
             m_HasEntries = true;
         }
-
-        NewEntriesPresent = true;
     }
 
-    public void CheckForOverflowAndExpand()
+    /// <summary>
+    /// Check if the bounds fall inside the array size. If not, then the array will be expanded.
+    /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private void CheckForOverflowAndExpand()
     {
-        if (UpperBound >= queue.Length)
+        if (UpperBound >= m_queue.Length)
         {
-            CoreMonoBeh[] newqueue = new CoreMonoBeh[queue.Length * 2];
-            m_queue.CopyTo(newqueue, 0);
-            m_queue = newqueue;
-
-#if UNITY_EDITOR
-            Debug.LogError("Queue overflow detected in an update manager queue! You might wanna raise the default value a bit.");
-#endif
+            Array.Resize(ref m_queue, m_queue.Length * 2);
         }
     }
 
-    public void RemoveBehaviour(CoreMonoBeh beh, LoopUpdateSettings settings)
+    /// <summary>
+    /// Removes a behaviour from the queue. Due to performance reasons it is heavily advised that you use RemoveBehavioursBatched().
+    /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public void RemoveBehaviourSingular(CoreMonoBeh beh)
     {
-        int virtI = 0;
+        int j = 0;
         int cnt = m_UpperBound;
         bool foundOne = false;
 
@@ -187,12 +195,12 @@ public class BehaviourLoopInstance : MonoBehaviour
         {
             if (queue[i] == beh)
             {
-                virtI++;
+                j++;
                 m_UpperBound--;
                 foundOne = true;
             }
 
-            queue[i] = queue[i + virtI];
+            queue[i] = queue[i + j];
         }
 
         if (foundOne)
@@ -204,7 +212,6 @@ public class BehaviourLoopInstance : MonoBehaviour
                 m_LowerBound = -1;
                 m_UpperBound = 0;
                 m_HasEntries = false;
-                NewEntriesPresent = false;
             }
             else
             {
@@ -213,16 +220,74 @@ public class BehaviourLoopInstance : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Sweeps the entire queue and removes behaviours that are marked as destroyed.
+    /// Designed for automatic use with CoreUpdateManager script when the behaviours are removed when they are destroyed.
+    /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public void RemoveBehavioursBatched()
+    {
+        int initialLowerBound = m_LowerBound;
+        int initialTrueLowerBound = initialLowerBound + 1;
+        int initialUpBound = m_UpperBound;
+        int removalAmount = 0;
+
+        //Sweep through the entire queue and check if behaviours are marked for deletion.
+        for (int i = initialTrueLowerBound; i < initialUpBound; i++)
+        {
+            //If the behaviour is marked for deletion - offset the overwrite value so it would be removed later.
+            if (queue[i].isMarkedForDeletion)
+            {
+                removalAmount++;
+                m_UpperBound--;
+            }
+            //If we had no success removing the behaviour - leave it be, but offset its position in the array.
+            else
+                queue[i - removalAmount] = queue[i];
+        }
+
+        //Early-out if we had no success in finding suitable targets.
+        if (removalAmount == 0)
+            return;
+
+        //Clear the fields that we've deemed to be removed.
+        for (int i = m_UpperBound; i < initialUpBound; i++)
+        {
+            queue[i] = null;
+        }
+
+        //Update internal values.
+        if (initialLowerBound + 1 >= m_UpperBound)
+        {
+            this.m_LowerBound = -1;
+            this.m_UpperBound = 0;
+            this.m_HasEntries = false;
+        }
+        else
+        {
+            this.m_UpperUpdateQueueBound = GetLoopSettings(queue[m_UpperBound - 1]).UpdateOrder;
+        }
+
+    }
+
+    /// <summary>
+    /// Sort the behaviours based on their execution order value in settings.
+    /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void SortBehaviours()
     {
         if (!NeedsSorting)
             return;
 
+#if UNITY_EDITOR
+        Profiler.BeginSample("Entres Sorting");
+#endif
+
         NeedsSorting = false;
 
         for (int i = LowerBound + 1; i < UpperBound; i++)
         {
-            var temp = queue[i];
+            CoreMonoBeh temp = queue[i];
             int j = i - 1;
 
             while (j >= 0 && GetLoopSettings(queue[j]).UpdateOrder > GetLoopSettings(temp).UpdateOrder)
@@ -233,8 +298,13 @@ public class BehaviourLoopInstance : MonoBehaviour
 
             queue[j + 1] = temp;
         }
+
+#if UNITY_EDITOR
+        Profiler.EndSample();
+#endif
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void RemoveLowerBehaviour()
     {
         m_LowerBound++;
@@ -244,7 +314,6 @@ public class BehaviourLoopInstance : MonoBehaviour
             m_LowerBound = -1;
             m_UpperBound = 0;
             m_HasEntries = false;
-            NewEntriesPresent = false;
         }
         else
         {
@@ -252,6 +321,7 @@ public class BehaviourLoopInstance : MonoBehaviour
         }
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void RemoveUpperBehaviour()
     {
         queue[m_UpperBound] = null;
@@ -261,7 +331,6 @@ public class BehaviourLoopInstance : MonoBehaviour
             m_LowerBound = -1;
             m_UpperBound = 0;
             m_HasEntries = false;
-            NewEntriesPresent = false;
         }
         else
         {
@@ -269,44 +338,31 @@ public class BehaviourLoopInstance : MonoBehaviour
         }
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void WipeQueue()
     {
-        for (int i = m_LowerBound + 1; i < m_UpperBound; i++)
-        {
-            queue[i] = null;
-        }
+        Array.Clear(queue, m_LowerBound + 1, m_UpperBound - m_LowerBound - 1);
 
         m_LowerBound = -1;
         m_UpperBound = 0;
         m_HasEntries = false;
-        NewEntriesPresent = false;
-    }
-
-    public bool HasNewEntries()
-    {
-        if (NewEntriesPresent)
-        {
-            NewEntriesPresent = false;
-            return true;
-        }
-        else
-        {
-            return false;
-        }
     }
 
     #endregion
 
-    #region stubfunctions
+    #region abstract functions
 
-    public virtual LoopUpdateSettings GetLoopSettings(CoreMonoBeh beh) { throw new System.Exception("Usage of base undefined getter"); }
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public abstract LoopUpdateSettings GetLoopSettings(CoreMonoBeh beh);
 
-    public virtual void WriteLoopSettings(CoreMonoBeh beh, LoopUpdateSettings set) { throw new System.Exception("Usage of base undefined setter"); }
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public abstract void WriteLoopSettings(CoreMonoBeh beh, LoopUpdateSettings set);
 
     /// <summary>
     /// Performs the entire queue poll and processess additions and removals for queues.
     /// </summary>
-    public virtual void Perform() { { throw new System.Exception("Usage of base undefined method"); } }
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public abstract void Perform();
 
     #endregion
 }

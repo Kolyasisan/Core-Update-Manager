@@ -14,23 +14,29 @@ using System;
 using Unity.IL2CPP.CompilerServices;
 using UnityEngine;
 
-[System.Serializable]
 [Il2CppSetOption(Option.NullChecks, false)]
 [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
 [Il2CppSetOption(Option.DivideByZeroChecks, false)]
 public class FixedUpdateLoop : BehaviourLoopInstance
 {
     public static FixedUpdateLoop instance { get; private set; }
+    public static bool isInited = false;
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
     static void Init()
     {
-        instance = (FixedUpdateLoop)CoreUpdateManager.RegisterBehaviourQueue<FixedUpdateLoop>("FixedUpdateQueue");
+        if (isInited)
+            return;
+
+        isInited = true;
+
+        instance = (FixedUpdateLoop)CoreUpdateManager.RegisterBehaviourQueue<FixedUpdateLoop>("FixedUpdateLoop");
     }
 
     void OnDestroy()
     {
         instance = null;
+        isInited = false;
     }
 
     public override LoopUpdateSettings GetLoopSettings(CoreMonoBeh beh)
@@ -68,6 +74,8 @@ public class FixedUpdateLoop : BehaviourLoopInstance
 #endif
                 }
             }
+
+            CoreUpdateManager.PerformUpdateManagerRoutine();
         }
     }
 }

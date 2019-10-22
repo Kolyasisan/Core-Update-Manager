@@ -6,6 +6,8 @@
 //* stuff is worth it, you can buy me a beer in return.
 //* ---------------------------------------------------------------
 
+using System.Runtime.CompilerServices;
+
 /// <summary>
 /// A basic struct that holds the config data for the behaviour.
 /// </summary>
@@ -31,6 +33,7 @@ public struct LoopUpdateSettings
     /// </summary>
     public bool autoManageEnableDisableEvents { get; private set; }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void PerformEnableDisableRoutine(bool enabled)
     {
         if (isInited && autoManageEnableDisableEvents)
