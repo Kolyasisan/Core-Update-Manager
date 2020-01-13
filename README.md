@@ -13,7 +13,7 @@ While Unity is doubling-down on their Entity Component System paradigm, the usua
 //Inherit from CoreMonoBeh
 public class MyMonobeh : CoreMonoBeh
 {
-    //Create loop settings for this Mono Behaviour
+    //Create loop settings for this MonoBehaviour's CoreUpdate method
     public override void CoreInitSetup()
     {
         UM_SETTINGS_UPDATE = new LoopUpdateSettings(default);
@@ -21,7 +21,7 @@ public class MyMonobeh : CoreMonoBeh
     
     //Use for initialization
     public override void CoreAwake() { }   
-    pubilc override void CoreStart() { }
+    public override void CoreStart() { }
     
     //These ones replace MonoBehaviour methods
     public virtual void CoreOnEnable() { }
@@ -29,7 +29,7 @@ public class MyMonobeh : CoreMonoBeh
     public virtual void CoreOnDestroy() { }
     
     //This method will be called according to the settings created in CoreInitSetup()
-    public override void Coreupdate() { }
+    public override void CoreUpdate() { }
     
     //Will not be called because the settings for these methods were not created in CoreInitSetup()
     public override void CoreFixedUpdate() { }
