@@ -24,9 +24,9 @@ public class MyMonobeh : CoreMonoBeh
     public override void CoreStart() { }
     
     //These ones replace MonoBehaviour methods
-    public virtual void CoreOnEnable() { }
-    public virtual void CoreOnDisable() { }
-    public virtual void CoreOnDestroy() { }
+    public override void CoreOnEnable() { }
+    public override void CoreOnDisable() { }
+    public override void CoreOnDestroy() { }
     
     //This method will be called according to the settings created in CoreInitSetup()
     public override void CoreUpdate() { }
