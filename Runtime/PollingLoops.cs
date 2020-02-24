@@ -8,6 +8,7 @@
 
 using System.Collections.Generic;
 using UnityEngine.LowLevel;
+using UnityEngine.PlayerLoop;
 
 public class PollingLoops
 {
@@ -26,7 +27,18 @@ public class PollingLoops
             var update = playerLoop.subSystemList[4];
             var updateAsList = new List<PlayerLoopSystem>(update.subSystemList);
 
-            updateAsList.Insert(1, new PlayerLoopSystem()
+            int updateLoopIndex = -1;
+
+            for (int i = 0; i < updateAsList.Count; i++)
+            {
+                if (updateAsList[i].type == typeof(Update.ScriptRunBehaviourUpdate))
+                {
+                    updateLoopIndex = i;
+                    break;
+                }
+            }
+
+            updateAsList.Insert(updateLoopIndex + 1, new PlayerLoopSystem()
             {
                 type = typeof(CoreUpdatePoller),
                 updateDelegate = UpdateFunction
@@ -58,7 +70,18 @@ public class PollingLoops
             var update = playerLoop.subSystemList[5];
             var updateAsList = new List<PlayerLoopSystem>(update.subSystemList);
 
-            updateAsList.Add(new PlayerLoopSystem()
+            int updateLoopIndex = -1;
+
+            for (int i = 0; i < updateAsList.Count; i++)
+            {
+                if (updateAsList[i].type == typeof(PreLateUpdate.ScriptRunBehaviourLateUpdate))
+                {
+                    updateLoopIndex = i;
+                    break;
+                }
+            }
+
+            updateAsList.Insert(updateLoopIndex + 1, new PlayerLoopSystem()
             {
                 type = typeof(CoreLateUpdatePoller),
                 updateDelegate = UpdateFunction
@@ -91,7 +114,18 @@ public class PollingLoops
             var update = playerLoop.subSystemList[2];
             var updateAsList = new List<PlayerLoopSystem>(update.subSystemList);
 
-            updateAsList.Insert(5, new PlayerLoopSystem()
+            int updateLoopIndex = -1;
+
+            for (int i = 0; i < updateAsList.Count; i++)
+            {
+                if (updateAsList[i].type == typeof(FixedUpdate.ScriptRunBehaviourFixedUpdate))
+                {
+                    updateLoopIndex = i;
+                    break;
+                }
+            }
+
+            updateAsList.Insert(updateLoopIndex, new PlayerLoopSystem()
             {
                 type = typeof(CoreFixedUpdatePoller),
                 updateDelegate = UpdateFunction
