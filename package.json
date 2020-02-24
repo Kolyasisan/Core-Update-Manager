@@ -4,7 +4,7 @@
 	"version": "1.0.0",	
 	"displayName": "Core Update Manager",
 	"author": "Nikolai 'Kolyasisan' Ponomarev",
-	"description": "A performant, extensible, garbage-free update manager.",
+	"description": "A performant, extensible, garbage-free update manager. https://github.com/Kolyasisan/Core-Update-Manager",
 	"keywords": ["update", "manager"],
 	"category": "examples",	
 	"dependencies": {},
