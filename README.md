@@ -1,6 +1,6 @@
 # Core Update Manager
 
-Core Update Manager is an optimized, extensible,ex garbage-free Update Manager for Unity.
+Core Update Manager is an optimized, extensible, garbage-free Update Manager for Unity.
 
 First used for Grand Dad Mania Revived (https://pchk.itch.io/grand-dad-mania). If you're asking "why" then read this: https://blogs.unity3d.com/2015/12/23/1k-update-calls/
 
