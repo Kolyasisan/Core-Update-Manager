@@ -8,6 +8,7 @@
 
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Profiling;
 
 #if UNITY_EDITOR
 using UnityEditor;
@@ -48,20 +49,11 @@ public class CoreUpdateManager
 #if UNITY_EDITOR
     private static void PlayModeChanged(PlayModeStateChange state)
     {
-        var preBehQueues = Instance.BehaviourQueues;
-
         if (state == PlayModeStateChange.ExitingPlayMode)
         {
-            isInited = false;
-            Instance = null;
-            TryInitialize();
-
-            if (preBehQueues != null)
+            for (int i = 0; i < Instance.BehaviourQueues.Count; i++)
             {
-                for (int i = 0; i < preBehQueues.Count; i++)
-                {
-                    preBehQueues[i].Reinitialize();
-                }
+                Instance.BehaviourQueues[i].WipeQueue();
             }
         }
     }
@@ -69,9 +61,17 @@ public class CoreUpdateManager
 
     public static void PerformManagingRoutineOnLoops()
     {
+#if UNITY_EDITOR
+        Profiler.BeginSample("Core Update Manager Routine");
+#endif
+
         for (int i = 0; i < Instance.BehaviourQueues.Count; i++)
         {
             Instance.BehaviourQueues[i].PerformManagingRoutine();
         }
+
+#if UNITY_EDITOR
+        Profiler.EndSample();
+#endif
     }
 }

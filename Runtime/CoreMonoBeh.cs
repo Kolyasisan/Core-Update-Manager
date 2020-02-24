@@ -99,20 +99,7 @@ public abstract class CoreMonoBeh : MonoBehaviour, ICoreUpdatable, ICoreLateUpda
         if (Application.isPlaying)
         {
 #endif
-            UpdateLoopSettings settings;
-
-            settings = UpdateLoopSettings_CoreUpdate;
-            settings.EligibleForUpdate = true;
-            UpdateLoopSettings_CoreUpdate = settings;
-
-            settings = UpdateLoopSettings_CoreLateUpdate;
-            settings.EligibleForUpdate = true;
-            UpdateLoopSettings_CoreLateUpdate = settings;
-
-            settings = UpdateLoopSettings_CoreFixedUpdate;
-            settings.EligibleForUpdate = true;
-            UpdateLoopSettings_CoreFixedUpdate = settings;
-
+            OnEnableManagementRoutine();
 #if UNITY_EDITOR
         }
         else
@@ -130,20 +117,7 @@ public abstract class CoreMonoBeh : MonoBehaviour, ICoreUpdatable, ICoreLateUpda
         if (Application.isPlaying)
         {
 #endif
-            UpdateLoopSettings settings;
-
-            settings = UpdateLoopSettings_CoreUpdate;
-            settings.EligibleForUpdate = false;
-            UpdateLoopSettings_CoreUpdate = settings;
-
-            settings = UpdateLoopSettings_CoreLateUpdate;
-            settings.EligibleForUpdate = false;
-            UpdateLoopSettings_CoreLateUpdate = settings;
-
-            settings = UpdateLoopSettings_CoreFixedUpdate;
-            settings.EligibleForUpdate = false;
-            UpdateLoopSettings_CoreFixedUpdate = settings;
-
+            OnDisableManagementRoutine();
 #if UNITY_EDITOR
         }
         else
@@ -195,9 +169,43 @@ public abstract class CoreMonoBeh : MonoBehaviour, ICoreUpdatable, ICoreLateUpda
         CoreLateUpdateLoop.TryInitialize();
 #endif
 
-        CoreUpdateLoop.Instance.NeedsRemovals = true;
-        CoreLateUpdateLoop.Instance.NeedsRemovals = true;
-        CoreFixedUpdateLoop.Instance.NeedsRemovals = true;
+        CoreUpdateLoop.Instance.NeedsRemovals |= UpdateLoopSettings_CoreUpdate.IsValid;
+        CoreLateUpdateLoop.Instance.NeedsRemovals |=  UpdateLoopSettings_CoreLateUpdate.IsValid;
+        CoreFixedUpdateLoop.Instance.NeedsRemovals |= UpdateLoopSettings_CoreFixedUpdate.IsValid;
+    }
+
+    protected virtual void OnEnableManagementRoutine()
+    {
+        UpdateLoopSettings settings;
+
+        settings = UpdateLoopSettings_CoreUpdate;
+        settings.EligibleForUpdate = true;
+        UpdateLoopSettings_CoreUpdate = settings;
+
+        settings = UpdateLoopSettings_CoreLateUpdate;
+        settings.EligibleForUpdate = true;
+        UpdateLoopSettings_CoreLateUpdate = settings;
+
+        settings = UpdateLoopSettings_CoreFixedUpdate;
+        settings.EligibleForUpdate = true;
+        UpdateLoopSettings_CoreFixedUpdate = settings;
+    }
+
+    protected virtual void OnDisableManagementRoutine()
+    {
+        UpdateLoopSettings settings;
+
+        settings = UpdateLoopSettings_CoreUpdate;
+        settings.EligibleForUpdate = false;
+        UpdateLoopSettings_CoreUpdate = settings;
+
+        settings = UpdateLoopSettings_CoreLateUpdate;
+        settings.EligibleForUpdate = false;
+        UpdateLoopSettings_CoreLateUpdate = settings;
+
+        settings = UpdateLoopSettings_CoreFixedUpdate;
+        settings.EligibleForUpdate = false;
+        UpdateLoopSettings_CoreFixedUpdate = settings;
     }
 
 #endregion

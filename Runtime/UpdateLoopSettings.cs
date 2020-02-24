@@ -7,6 +7,7 @@
 //* ---------------------------------------------------------------
 
 using System.Runtime.CompilerServices;
+using UnityEngine;
 
 public struct UpdateLoopSettings
 {
@@ -42,7 +43,7 @@ public struct UpdateLoopSettings
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static UpdateLoopSettings Create(CoreMonoBeh beh, int updateOrder = 0)
+    public static UpdateLoopSettings Create(MonoBehaviour beh, int updateOrder = 0)
     {
         return new UpdateLoopSettings(beh.isActiveAndEnabled, updateOrder);
     }

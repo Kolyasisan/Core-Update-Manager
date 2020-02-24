@@ -4,11 +4,15 @@
 	"version": "1.0.0",	
 	"displayName": "Core Update Manager",
 	"author": "Nikolai 'Kolyasisan' Ponomarev",
-	"description": "A performant, extensible, garbage-free update manager for unity.",
-	"keywords": ["update", "manager",],
+	"description": "A performant, extensible, garbage-free update manager.",
+	"keywords": ["update", "manager"],
+	"category": "examples",	
 	"dependencies": {},
 	"repository": {
 		"type": "git",
 		"url": "https://github.com/Kolyasisan/Core-Update-Manager.git"
-	}
+	},
+	"Samples": [
+
+	]
 }

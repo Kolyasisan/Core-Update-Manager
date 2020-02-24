@@ -34,15 +34,6 @@ public class CoreUpdateLoop : BehaviourLoopInstance<ICoreUpdatable>
         PollingLoops.CoreUpdatePoller.Hook();
     }
 
-    public override void Reinitialize()
-    {
-        if (IsInited)
-        {
-            IsInited = false;
-            TryInitialize();
-        }
-    }
-
     public override UpdateLoopSettings GetSettings(ICoreUpdatable beh)
     {
         return beh.UpdateLoopSettings_CoreUpdate;

@@ -6,6 +6,7 @@
 //* stuff is worth it, you can buy me a beer in return.
 //* ---------------------------------------------------------------
 
+#if UNITY_EDITOR
 using UnityEngine;
 using UnityEditor;
 
@@ -128,3 +129,4 @@ public class CoreUpdateManagerDebugger : EditorWindow
         }
     }
 }
+#endif

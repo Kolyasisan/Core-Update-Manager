@@ -44,10 +44,10 @@ public abstract class BehaviourLoopBase
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public abstract void ProcessEnqueuedBehaviours();
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public abstract void Reinitialize();
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public abstract void PerformManagingRoutine();
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public abstract IUpdatableBase[] GetQueue();
     public abstract UpdateLoopSettings GetSettings(IUpdatableBase beh);
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public abstract void WipeQueue();
 }

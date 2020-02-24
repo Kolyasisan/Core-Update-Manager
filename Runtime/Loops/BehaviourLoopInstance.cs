@@ -103,17 +103,16 @@ public abstract class BehaviourLoopInstance<T> : BehaviourLoopBase where T : cla
         int virtI = 0;
         int initialUpperBound = UpperBound;
 
-        for (int i = LowerBound + 1; i < UpperBound; i++)
+        for (int i = LowerBound + 1; i < initialUpperBound; i++)
         {
             UpdateLoopSettings settings = GetSettings(Queue[i]);
+            Queue[i - virtI] = Queue[i];
 
             if (!settings.ShouldBeRegistered || !settings.IsValid)
             {
                 virtI++;
                 UpperBound--;
             }
-
-            Queue[i] = Queue[i + virtI];
         }
 
         for (int i = UpperBound; i < initialUpperBound; i++)
@@ -194,7 +193,7 @@ public abstract class BehaviourLoopInstance<T> : BehaviourLoopBase where T : cla
     /// Wipes the queue.
     /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void WipeQueue()
+    public override void WipeQueue()
     {
         for (int i = LowerBound + 1; i < UpperBound; i++)
         {
@@ -229,10 +228,6 @@ public abstract class BehaviourLoopInstance<T> : BehaviourLoopBase where T : cla
     {
         if (UpperBound >= Queue.Length)
         {
-#if UNITY_EDITOR
-            Debug.LogError($"Queue overflow detected in an update manager queue with a size of {Queue.Length.ToString()}! You might wanna raise the default value a bit.");
-#endif
-
             T[] newqueue = new T[Queue.Length * 2];
             Queue.CopyTo(newqueue, 0);
             Queue = newqueue;
@@ -247,10 +242,6 @@ public abstract class BehaviourLoopInstance<T> : BehaviourLoopBase where T : cla
     {
         if (AdditionQueueAmount >= AdditionQueue.Length)
         {
-#if UNITY_EDITOR
-            Debug.LogError($"Queue overflow detected in an update manager queue with a size of {Queue.Length.ToString()}! You might wanna raise the default value a bit.");
-#endif
-
             T[] newqueue = new T[Queue.Length * 2];
             AdditionQueue.CopyTo(newqueue, 0);
             AdditionQueue = newqueue;
