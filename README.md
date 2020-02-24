@@ -1,11 +1,12 @@
 # Core Update Manager
 
-An optimized, garbage-free Update Manager for Unity with custom execution order that works with Arrays.  
+Core Update Manager is an optimized, extensible,ex garbage-free Update Manager for Unity.
+
 First used for Grand Dad Mania Revived (https://pchk.itch.io/grand-dad-mania). If you're asking "why" then read this: https://blogs.unity3d.com/2015/12/23/1k-update-calls/
 
-Long story short: having magic methods called from Unity has an overhead and thus, if you wish to gain performance or get more freedom/features at the expense of being a little more careful and using a little bit more memory, you can write your own Update Manager which will be the only thing that receives the magic Update method and distributes it across all the other objects. In Grand Dad Mania Revived we managed to save 0.5ms on average on Xiaomi Mi5S Plus.
+TL;DR: having magic methods called from Unity has a noticeable overhead with big amount of MonoBehaviours. If you wish to gain performance in this aspect or get more freedom/features at the expense of being a little more careful and using a little bit more memory, you can write your own Update Manager which will be the only thing that receives the magic Update method and distributes it across all the other objects. In Grand Dad Mania Revived we managed to save 0.5ms on average on Xiaomi Mi5S Plus.
 
-While Unity is doubling-down on their Entity Component System paradigm, the usual MonoBehaviour approach is not going away, so this project will most definitely be useful to you. Managed updates will be faster than Unity's marshalled calls in pretty much any project.
+While Unity is doubling-down on their Entity Component System paradigm, the usual MonoBehaviour approach is not going away, so this project can very well be useful to you. Managed updates will be faster than Unity's marshalled calls in almost any project.
 
 # Quickstart
 ```C#
@@ -16,14 +17,12 @@ public class MyMonobeh : CoreMonoBeh
     //Create loop settings for this MonoBehaviour's CoreUpdate method
     public override void CoreInitSetup()
     {
-        UM_SETTINGS_UPDATE = new LoopUpdateSettings(default);
+        UpdateLoopSettings_CoreUpdate = UpdateLoopSettings.Create(this);
     }
     
-    //Use for initialization
+    //These ones replace MonoBehaviour methods
     public override void CoreAwake() { }   
     public override void CoreStart() { }
-    
-    //These ones replace MonoBehaviour methods
     public override void CoreOnEnable() { }
     public override void CoreOnDisable() { }
     public override void CoreOnDestroy() { }
@@ -31,7 +30,7 @@ public class MyMonobeh : CoreMonoBeh
     //This method will be called according to the settings created in CoreInitSetup()
     public override void CoreUpdate() { }
     
-    //Will not be called because the settings for these methods were not created in CoreInitSetup()
+    //Will not be called because the settings for these methods have not been created in CoreInitSetup()
     public override void CoreFixedUpdate() { }
     public override void CoreLateUpdate() { }
 }
