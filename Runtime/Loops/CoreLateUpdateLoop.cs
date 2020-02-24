@@ -11,71 +11,75 @@
 #define UPDATEMANAGER_USETRYCATCH
 
 using System;
-using Unity.IL2CPP.CompilerServices;
 using UnityEngine;
 
-[Il2CppSetOption(Option.NullChecks, false)]
-[Il2CppSetOption(Option.ArrayBoundsChecks, false)]
-[Il2CppSetOption(Option.DivideByZeroChecks, false)]
-public class UpdateLoop : BehaviourLoopInstance
+[ExecuteAlways]
+public class CoreLateUpdateLoop : BehaviourLoopInstance<ICoreLateUpdatable>
 {
-    public static UpdateLoop instance { get; private set; }
-    public static bool isInited = false;
+    public static CoreLateUpdateLoop Instance { get; private set; }
+
+    public static bool IsInited { get; set; }
+
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
-    static void Init()
+    public static void TryInitialize()
     {
-        if (isInited)
+        if (IsInited)
             return;
 
-        isInited = true;
+        IsInited = true;
+        Instance = new CoreLateUpdateLoop();
+        Instance.RegisterLoopToUpdateManager();
 
-        instance = (UpdateLoop)CoreUpdateManager.RegisterBehaviourQueue<UpdateLoop>("UpdateLoop");
+        PollingLoops.CoreLateUpdatePoller.Hook();
     }
 
-    void OnDestroy()
+    public override void Reinitialize()
     {
-        instance = null;
-        isInited = false;
+        if (IsInited)
+        {
+            IsInited = false;
+            TryInitialize();
+        }
     }
 
-    public override LoopUpdateSettings GetLoopSettings(CoreMonoBeh beh)
+    public override UpdateLoopSettings GetSettings(ICoreLateUpdatable beh)
     {
-        return beh.UM_SETTINGS_UPDATE;
+        return beh.UpdateLoopSettings_CoreLateUpdate;
     }
 
-    public override void WriteLoopSettings(CoreMonoBeh beh, LoopUpdateSettings set)
+    public override void WriteSettings(UpdateLoopSettings config, ICoreLateUpdatable beh)
     {
-        beh.UM_SETTINGS_UPDATE = set;
+        beh.UpdateLoopSettings_CoreLateUpdate = config;
     }
 
-    public override void Perform()
+    public override void UpdateLoop()
     {
-        CoreUpdateManager.PerformUpdateManagerRoutine();
+        CoreUpdateManager.PerformManagingRoutineOnLoops();
 
         if (HasEntries)
         {
             int cnt = UpperBound;
             for (int i = LowerBound + 1; i < cnt; i++)
             {
-                if (queue[i].UM_SETTINGS_UPDATE.eligibleForUpdate)
+                if (Queue[i].UpdateLoopSettings_CoreLateUpdate.EligibleForUpdate)
                 {
 #if UPDATEMANAGER_USETRYCATCH
                     try
                     {
-                        queue[i].CoreUpdate();
+                        Queue[i].CoreLateUpdate();
                     }
                     catch (Exception e)
                     {
                         Debug.LogException(e);
                     }
 #else
-                    queue[i].CoreUpdate();
+                    Queue[i].CoreLateUpdate();
 #endif
                 }
             }
-
-            CoreUpdateManager.PerformUpdateManagerRoutine();
         }
+
+        CoreUpdateManager.PerformManagingRoutineOnLoops();
     }
 }

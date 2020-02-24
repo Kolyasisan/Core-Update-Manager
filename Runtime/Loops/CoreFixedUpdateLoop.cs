@@ -11,72 +11,75 @@
 #define UPDATEMANAGER_USETRYCATCH
 
 using System;
-using Unity.IL2CPP.CompilerServices;
 using UnityEngine;
 
-[Il2CppSetOption(Option.NullChecks, false)]
-[Il2CppSetOption(Option.ArrayBoundsChecks, false)]
-[Il2CppSetOption(Option.DivideByZeroChecks, false)]
-public class GameplayUpdateLoop : BehaviourLoopInstance
+[ExecuteAlways]
+public class CoreFixedUpdateLoop : BehaviourLoopInstance<ICoreFixedUpdatable>
 {
-    public static GameplayUpdateLoop instance { get; private set; }
-    public static bool isInited = false;
-    public bool isPaused = false;
+    public static CoreFixedUpdateLoop Instance { get; private set; }
+
+    public static bool IsInited { get; set; }
+
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
-    static void Init()
+    public static void TryInitialize()
     {
-        if (isInited)
+        if (IsInited)
             return;
 
-        isInited = true;
+        IsInited = true;
+        Instance = new CoreFixedUpdateLoop();
+        Instance.RegisterLoopToUpdateManager();
 
-        instance = (GameplayUpdateLoop)CoreUpdateManager.RegisterBehaviourQueue<GameplayUpdateLoop>("GameplayUpdateLoop");
+        PollingLoops.CoreFixedUpdatePoller.Hook();
     }
 
-    void OnDestroy()
+    public override void Reinitialize()
     {
-        instance = null;
-        isInited = false;
+        if (IsInited)
+        {
+            IsInited = false;
+            TryInitialize();
+        }
     }
 
-    public override LoopUpdateSettings GetLoopSettings(CoreMonoBeh beh)
+    public override UpdateLoopSettings GetSettings(ICoreFixedUpdatable beh)
     {
-        return beh.UM_SETTINGS_GAMEPLAYUPDATE;
+        return beh.UpdateLoopSettings_CoreFixedUpdate;
     }
 
-    public override void WriteLoopSettings(CoreMonoBeh beh, LoopUpdateSettings set)
+    public override void WriteSettings(UpdateLoopSettings config, ICoreFixedUpdatable beh)
     {
-        beh.UM_SETTINGS_GAMEPLAYUPDATE = set;
+        beh.UpdateLoopSettings_CoreFixedUpdate = config;
     }
 
-    public override void Perform()
+    public override void UpdateLoop()
     {
-        CoreUpdateManager.PerformUpdateManagerRoutine();
+        CoreUpdateManager.PerformManagingRoutineOnLoops();
 
-        if (HasEntries && !isPaused)
+        if (HasEntries)
         {
             int cnt = UpperBound;
             for (int i = LowerBound + 1; i < cnt; i++)
             {
-                if (queue[i].UM_SETTINGS_GAMEPLAYUPDATE.eligibleForUpdate)
+                if (Queue[i].UpdateLoopSettings_CoreFixedUpdate.EligibleForUpdate)
                 {
 #if UPDATEMANAGER_USETRYCATCH
                     try
                     {
-                        queue[i].CoreGameplayUpdate();
+                        Queue[i].CoreFixedUpdate();
                     }
                     catch (Exception e)
                     {
                         Debug.LogException(e);
                     }
 #else
-                    queue[i].CoreGameplayUpdate();
+                    Queue[i].CoreFixedUpdate();
 #endif
                 }
             }
-
-            CoreUpdateManager.PerformUpdateManagerRoutine();
         }
+
+        CoreUpdateManager.PerformManagingRoutineOnLoops();
     }
 }

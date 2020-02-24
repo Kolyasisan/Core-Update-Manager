@@ -6,76 +6,32 @@
 //* stuff is worth it, you can buy me a beer in return.
 //* ---------------------------------------------------------------
 
-using Unity.IL2CPP.CompilerServices;
 using UnityEngine;
 
-[Il2CppSetOption(Option.NullChecks, false)]
-[Il2CppSetOption(Option.ArrayBoundsChecks, false)]
-[Il2CppSetOption(Option.DivideByZeroChecks, false)]
-public abstract partial class CoreMonoBeh : MonoBehaviour
+public abstract class CoreMonoBeh : MonoBehaviour, ICoreUpdatable, ICoreLateUpdatable, ICoreFixedUpdatable
 {
-    //Add your own settings defines here or use a partial class.
-    #region loop settings
+    #region LoopConfigs
 
-    public LoopUpdateSettings UM_SETTINGS_UPDATE { get; set; }
-    public LoopUpdateSettings UM_SETTINGS_GAMEPLAYUPDATE { get; set; }
-    public LoopUpdateSettings UM_SETTINGS_FIXEDUPDATE { get; set; }
+    public UpdateLoopSettings UpdateLoopSettings_CoreUpdate { get; set; }
+    public UpdateLoopSettings UpdateLoopSettings_CoreFixedUpdate { get; set; }
+    public UpdateLoopSettings UpdateLoopSettings_CoreLateUpdate { get; set; }
 
     #endregion
 
-    //Add your own function defines here or use a partial class.
-    #region loop functions
+    #region LoopFunctions
 
     public virtual void CoreUpdate() { }
-    public virtual void CoreGameplayUpdate() { }
     public virtual void CoreFixedUpdate() { }
+    public virtual void CoreLateUpdate() { }
 
     #endregion
 
-    //Insert routine functions for your custom settings defines here.
-    #region OnEnable OnDisable callbacks
-
-    protected void OnEnable()
-    {
-        UM_SETTINGS_UPDATE.PerformEnableDisableRoutine(true);
-        UM_SETTINGS_GAMEPLAYUPDATE.PerformEnableDisableRoutine(true);
-        UM_SETTINGS_FIXEDUPDATE.PerformEnableDisableRoutine(true);
-
-        CoreOnEnable();
-    }
-
-    protected void OnDisable()
-    {
-        UM_SETTINGS_UPDATE.PerformEnableDisableRoutine(false);
-        UM_SETTINGS_GAMEPLAYUPDATE.PerformEnableDisableRoutine(false);
-        UM_SETTINGS_FIXEDUPDATE.PerformEnableDisableRoutine(false);
-
-        CoreOnDisable();
-    }
-
-    #endregion
-
-
-
-
-
-    //Internal stuff beyond this point.
-    #region misc variables
+    #region BehaviourFunctions
 
     /// <summary>
-    /// Returns true if this CoreMonoBeh is about to be destroyed.
+    /// Called right after OnAwakeMethod() in order to initialize your UM_SETTINGS for the update manager
     /// </summary>
-    public bool isMarkedForDeletion { get; private set; }
-
-    #endregion
-
-    #region cached components
-
-    public Transform _transform { get; private set; }
-
-    #endregion
-
-    #region behaviour functions
+    public virtual void CoreInitSetup() { }
 
     /// <summary>
     /// Works the same as Awake(). Use this instead of the Awake method.
@@ -93,11 +49,6 @@ public abstract partial class CoreMonoBeh : MonoBehaviour
     public virtual void CoreOnDestroy() { }
 
     /// <summary>
-    /// Called right after OnAwakeMethod() in order to initialize your UM_SETTINGS for the update manager
-    /// </summary>
-    public virtual void CoreInitSetup() { }
-
-    /// <summary>
     /// Works the same as OnEnable().
     /// </summary>
     public virtual void CoreOnEnable() { }
@@ -109,21 +60,23 @@ public abstract partial class CoreMonoBeh : MonoBehaviour
 
     #endregion
 
-    #region internal functions
+    #region CachedComponentsAndMisc
+
+    public Transform _transform { get; private set; }
+
+    #endregion
+
+    #region InternalFunctions
 
     protected void Awake()
     {
-        _transform = (Transform)GetComponent(typeof(Transform));
+        _transform = GetComponent<Transform>();
 
 #if UNITY_EDITOR
         if (Application.isPlaying)
-        {
-            CoreInitSetup();
-            CoreUpdateManager.ScheduleBehaviourRegister(this);
-        }
+            RegisterRoutine();
 #else
-        CoreInitSetup();
-        CoreUpdateManager.ScheduleBehaviourRegister(this);
+        RegisterRoutine();
 #endif
 
         CoreAwake();
@@ -136,26 +89,116 @@ public abstract partial class CoreMonoBeh : MonoBehaviour
 
     protected void OnDestroy()
     {
+        UnregisterRoutine();
+        CoreOnDestroy();
+    }
+
+    protected void OnEnable()
+    {
 #if UNITY_EDITOR
         if (Application.isPlaying)
         {
-            isMarkedForDeletion = true;
-            CoreOnDestroy();
-            CoreUpdateManager.ScheduleBehaviourRemoval(this);
+#endif
+            UpdateLoopSettings settings;
+
+            settings = UpdateLoopSettings_CoreUpdate;
+            settings.EligibleForUpdate = true;
+            UpdateLoopSettings_CoreUpdate = settings;
+
+            settings = UpdateLoopSettings_CoreLateUpdate;
+            settings.EligibleForUpdate = true;
+            UpdateLoopSettings_CoreLateUpdate = settings;
+
+            settings = UpdateLoopSettings_CoreFixedUpdate;
+            settings.EligibleForUpdate = true;
+            UpdateLoopSettings_CoreFixedUpdate = settings;
+
+#if UNITY_EDITOR
         }
         else
         {
-            isMarkedForDeletion = true;
-            CoreOnDestroy();
+            RegisterRoutine();
         }
-#else
-            isMarkedForDeletion = true;
-            CoreOnDestroy();
-            CoreUpdateManager.ScheduleBehaviourRemoval(this);
 #endif
 
+        CoreOnEnable();
     }
 
-    #endregion
+    protected void OnDisable()
+    {
+#if UNITY_EDITOR
+        if (Application.isPlaying)
+        {
+#endif
+            UpdateLoopSettings settings;
 
+            settings = UpdateLoopSettings_CoreUpdate;
+            settings.EligibleForUpdate = false;
+            UpdateLoopSettings_CoreUpdate = settings;
+
+            settings = UpdateLoopSettings_CoreLateUpdate;
+            settings.EligibleForUpdate = false;
+            UpdateLoopSettings_CoreLateUpdate = settings;
+
+            settings = UpdateLoopSettings_CoreFixedUpdate;
+            settings.EligibleForUpdate = false;
+            UpdateLoopSettings_CoreFixedUpdate = settings;
+
+#if UNITY_EDITOR
+        }
+        else
+        {
+            UnregisterRoutine();
+        }
+#endif
+
+
+        CoreOnDisable();
+    }
+
+    protected virtual void RegisterRoutine()
+    {
+        CoreInitSetup();
+
+        //For editor lazy initialization.
+#if UNITY_EDITOR
+        CoreUpdateLoop.TryInitialize();
+        CoreFixedUpdateLoop.TryInitialize();
+        CoreLateUpdateLoop.TryInitialize();
+#endif
+
+        CoreUpdateLoop.Instance.EnqueueBehaviour(this);
+        CoreLateUpdateLoop.Instance.EnqueueBehaviour(this);
+        CoreFixedUpdateLoop.Instance.EnqueueBehaviour(this);
+    }
+
+    protected virtual void UnregisterRoutine()
+    {
+        UpdateLoopSettings settings;
+
+        settings = UpdateLoopSettings_CoreUpdate;
+        settings.ShouldBeRegistered = false;
+        UpdateLoopSettings_CoreUpdate = settings;
+
+        settings = UpdateLoopSettings_CoreLateUpdate;
+        settings.ShouldBeRegistered = false;
+        UpdateLoopSettings_CoreLateUpdate = settings;
+
+        settings = UpdateLoopSettings_CoreFixedUpdate;
+        settings.ShouldBeRegistered = false;
+        UpdateLoopSettings_CoreFixedUpdate = settings;
+
+        //For editor lazy initialization.
+#if UNITY_EDITOR
+        CoreUpdateLoop.TryInitialize();
+        CoreFixedUpdateLoop.TryInitialize();
+        CoreLateUpdateLoop.TryInitialize();
+#endif
+
+        CoreUpdateLoop.Instance.NeedsRemovals = true;
+        CoreLateUpdateLoop.Instance.NeedsRemovals = true;
+        CoreFixedUpdateLoop.Instance.NeedsRemovals = true;
+    }
+
+#endregion
 }
