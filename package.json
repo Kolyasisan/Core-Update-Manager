@@ -1,1 +1,14 @@
-{"name":"com.kolyasisan.coreupdatemanager","displayName":"Core Update Manager","version":"1.0.0","unity":"2018.4","description":"A performant, extensible, garbage-free update manager for Unity","keywords":["Update","Manager"],"category":""}
+{
+	"name": "com.kolyasisan.coreupdatemanager",
+	"unity": "2018.4",
+	"version": "1.0.0",	
+	"displayName": "Core Update Manager",
+	"author": "Nikolai 'Kolyasisan' Ponomarev",
+	"description": "A performant, extensible, garbage-free update manager for unity.",
+	"keywords": ["update", "manager",],
+	"dependencies": {},
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/Kolyasisan/Core-Update-Manager.git"
+	},
+}
