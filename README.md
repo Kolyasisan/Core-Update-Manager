@@ -8,6 +8,9 @@ TL;DR: having magic methods called from Unity has a noticeable overhead with big
 
 While Unity is doubling-down on their Entity Component System paradigm, the usual MonoBehaviour approach is not going away, so this project can very well be useful to you. Managed updates will be faster than Unity's marshalled calls in almost any project.
 
+# How to install
+Simply copy-paste this into Unity's Package Manager git field https://github.com/Kolyasisan/Core-Update-Manager.git or create a local package folder manually. You can also import it directly into the project.
+
 # Quickstart
 ```C#
 
