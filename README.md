@@ -1,3 +1,6 @@
+# Note
+This is the first version of Core Update Manager. It is highly recommended for you to check out the new rewritten version at master.
+
 # Core Update Manager
 
 An optimized, garbage-free Update Manager for Unity with custom execution order that works with Arrays.  
