@@ -241,7 +241,7 @@ public abstract class BehaviourLoopInstance<T> : BehaviourLoopBase where T : cla
     {
         if (AdditionQueueAmount >= AdditionQueue.Length)
         {
-            T[] newqueue = new T[Queue.Length * 2];
+            T[] newqueue = new T[AdditionQueue.Length * 2];
             AdditionQueue.CopyTo(newqueue, 0);
             AdditionQueue = newqueue;
         }
