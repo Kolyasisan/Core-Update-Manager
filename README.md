@@ -1,5 +1,7 @@
 # Core Update Manager
 
+IMPORTANT NOTE: This branch is currently not under active development and is not considered to be suitable for production as-is. A greatly refactored version is currently being developed and battle-tested with a newer iteration of Grand Dad Mania: Revived and Know By Heart projects.
+
 Core Update Manager is an optimized, extensible, garbage-free Update Manager for Unity.
 
 First used for Grand Dad Mania Revived (https://pchk.itch.io/grand-dad-mania). If you're asking "why" then read this: https://blogs.unity3d.com/2015/12/23/1k-update-calls/
