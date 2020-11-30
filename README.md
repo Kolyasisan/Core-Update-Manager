@@ -4,7 +4,7 @@ IMPORTANT NOTE: This branch is currently not under active development and is not
 
 Core Update Manager is an optimized, extensible, garbage-free Update Manager for Unity.
 
-First used for Grand Dad Mania Revived (https://pchk.itch.io/grand-dad-mania). If you're asking "why" then read this: https://blogs.unity3d.com/2015/12/23/1k-update-calls/
+First used for Grand Dad Mania Revived. If you're asking "why" then read this: https://blogs.unity3d.com/2015/12/23/1k-update-calls/
 
 TL;DR: having magic methods called from Unity has a noticeable overhead with big amount of MonoBehaviours. If you wish to gain performance in this aspect or get more freedom/features at the expense of being a little more careful and using a little bit more memory, you can write your own Update Manager which will be the only thing that receives the magic Update method and distributes it across all the other objects. In Grand Dad Mania Revived we managed to save 0.5ms on average on Xiaomi Mi5S Plus.
 
